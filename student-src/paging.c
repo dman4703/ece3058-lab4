@@ -215,12 +215,30 @@ void proc_cleanup(pcb_t *proc) {
     // free page table in the frame table. use proc's saved_ptbr to index into frame_table and clear Frame_table[...].protected
 
     /* Look up the process's page table */
-
+    pte_t *pt = (pte_t *)(mem + (proc->saved_ptbr * PAGE_SIZE));
     /* Iterate the page table and clean up each valid page */
     for (size_t i = 0; i < NUM_PAGES; i++) {
-
+        pte_t *entry = &pt[i];
+        // If  page is mapped in memory, clear fte
+        if (entry->valid) {
+            pfn_t pfn = entry->pfn;
+            frame_table[pfn].mapped = 0;
+            frame_table[pfn].referenced = 0;
+            frame_table[pfn].process = NULL;
+            frame_table[pfn].vpn = 0;
+            entry->valid = 0;
+            entry->dirty = 0;
+        }
+        // Free any swap space if it exists
+        if (swap_exists(entry)) {
+            swap_free(entry);
+        }
     }
 
     /* Free the page table itself in the frame table */
-
+    frame_table[proc->saved_ptbr].protected = 0;
+    frame_table[proc->saved_ptbr].mapped = 0;
+    frame_table[proc->saved_ptbr].referenced = 0;
+    frame_table[proc->saved_ptbr].process = NULL;
+    frame_table[proc->saved_ptbr].vpn = 0;
 }
