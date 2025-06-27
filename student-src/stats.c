@@ -4,7 +4,7 @@
 /* The stats. See the definition in stats.h. */
 stats_t stats;
 
-/*  --------------------------------- PROBLEM 9 --------------------------------------
+/*  --------------------------------- Task 8 --------------------------------------
     Calculate any remaining statistics to print out.
 
     You will need to include code to increment many of these stats in
