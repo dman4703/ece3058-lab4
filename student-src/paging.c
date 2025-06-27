@@ -107,7 +107,7 @@ void proc_init(pcb_t *proc) {
     -----------------------------------------------------------------------------------
  */
 void context_switch(pcb_t *proc) {
-    // set PTBR to the saved_ptbr of the new incoming process
+    PTBR = proc->saved_ptbr; // set PTBR to the saved_ptbr of the new incoming process
 }
 
 /*  --------------------------------- Task 4 --------------------------------------
