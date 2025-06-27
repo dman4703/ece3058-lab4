@@ -179,7 +179,7 @@ uint8_t mem_access(vaddr_t address, char rw, uint8_t data) {
         Create the physical address using your offset and the page
         table entry.
     */
-    paddr_t paddr = (pfn * PAGE_SIZE) + offset;
+    paddr_t paddr = ((paddr_t)pfn * PAGE_SIZE) + offset;
     stats.accesses++;
 
     /* Either read or write the data to the physical address
