@@ -41,7 +41,8 @@ void system_init(void) {
      * frames in memory. The frame table will be useful later if we need to
      * evict pages during page faults.
      */
-
+    frame_table = (fte_t *)mem;
+    memset(frame_table, 0, sizeof(fte_t) * NUM_FRAMES);
 
     /*
      * 2. Mark the first frame table entry as protected.
@@ -50,6 +51,7 @@ void system_init(void) {
      * however, there are some frames we never want to evict.
      * We mark these special pages as "protected" to indicate this.
      */
+    frame_table[0].protected = 1;
 
 }
 
@@ -77,6 +79,8 @@ void proc_init(pcb_t *proc) {
      * 1. Call the free frame allocator (free_frame) to return a free frame for
      * this process's page table. You should zero-out the memory.
      */
+    pfn_t pfn = free_frame();
+    memset(mem + (pfn * PAGE_SIZE), 0, PAGE_SIZE);
 
 
     /*
@@ -86,6 +90,8 @@ void proc_init(pcb_t *proc) {
      * Additionally, mark the frame's frame table entry as protected. You do not
      * want your page table to be accidentally evicted.
      */
+    proc->saved_ptbr = pfn;
+    frame_table[pfn].protected = 1;
 
 }
 
