@@ -31,19 +31,28 @@ void page_fault(vaddr_t address) {
     // update page table entry: set pfn to free frame, update valid and dirty bits accordingly
     // update frame table entry: Frame_table[new frame], update mapped, vpn, and process variables. Process = current_process
     // initialize memory. Pointer to new frame, check if pte's swap bit is on. If it is on --> swap_read(): dst = (pointer arithmetic) to new frame. If not, zero out memory at new frame.
-    
-    /* First, split the faulting address and locate the page table entry */
 
+   stats.page_faults++;
+
+    /* First, split the faulting address and locate the page table entry */
+   vpn_t vpn = vaddr_vpn(address);
+   pte_t *pt = (pte_t *)(mem + (PTBR * PAGE_SIZE));
+   pte_t *entry = &pt[vpn];
 
     /* It's a page fault, so the entry obviously won't be valid. Grab
        a frame to use by calling free_frame(). */
-
+   pfn_t new_frame = free_frame();
 
     /* Update the page table entry. Make sure you set any relevant bits. */
-
+   entry->pfn = new_frame;
+   entry->valid = 1;
+   entry->dirty = 0;
 
     /* Update the frame table. Make sure you set any relevant bits. */
-
+   frame_table[new_frame].mapped = 1;
+   frame_table[new_frame].referenced = 0;
+   frame_table[new_frame].process = current_process;
+   frame_table[new_frame].vpn = vpn;
 
     /* Initialize the page's memory. On a page fault, it is not enough
      * just to allocate a new frame. We must load in the old data from
@@ -58,5 +67,11 @@ void page_fault(vaddr_t address) {
      * Otherwise, zero the page's memory. If the page is later written
      * back, swap_write() will automatically allocate a swap entry.
      */
+   void *frame_ptr = mem + (new_frame * PAGE_SIZE);
+    if (swap_exists(entry)) {
+        swap_read(entry, frame_ptr); // read back in page from swap
+    } else {
+        memset(frame_ptr, 0, PAGE_SIZE); // clear memory
+    }
 
 }
