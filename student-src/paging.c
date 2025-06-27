@@ -151,13 +151,22 @@ uint8_t mem_access(vaddr_t address, char rw, uint8_t data) {
     // return physical address's data
 
     /* Split the address and find the page table entry */
-
+    vpn_t vpn = vaddr_vpn(address);
+    uint16_t offset = vaddr_offset(address);
+    // get adress of page table
+    pte_t *pt = (pte_t *)(mem + (PTBR * PAGE_SIZE));
+    pte_t *entry = &pt[vpn];
 
     /* If an entry is invalid, just page fault to allocate a page for the page table. */
-
+    if (!entry->valid) {
+        page_fault(address);
+        pt = (pte_t *)(mem + (PTBR * PAGE_SIZE));
+        entry = &pt[vpn];
+    }
 
     /* Set the "referenced" bit to reduce the page's likelihood of eviction */
-
+    pfn_t pfn = entry->pfn;
+    frame_table[pfn].referenced = 1;
 
     /*
         The physical address will be constructed like this:
@@ -170,14 +179,19 @@ uint8_t mem_access(vaddr_t address, char rw, uint8_t data) {
         Create the physical address using your offset and the page
         table entry.
     */
-
+    paddr_t paddr = (pfn * PAGE_SIZE) + offset;
+    stats.accesses++;
 
     /* Either read or write the data to the physical address
        depending on 'rw' */
     if (rw == 'r') {
-
+        stats.reads++;
+        return mem[paddr];
     } else {
-
+        stats.writes++;
+        entry->dirty = 1;
+        mem[paddr] = data;
+        return data;
     }
 }
 
