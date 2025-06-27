@@ -20,4 +20,14 @@ void compute_stats() {
     // Stats.access = reads + writes
     // Stats.aat = total operation time / stat.accesses
     // total operation time = (memory-level time * memory-level accesses) + (disk-level read time * disk-read accesses) + (disk-level write time * disk-write accesses)
+
+    if (stats.accesses == 0) {
+        stats.aat = 0.0;
+        return;
+    }
+
+    stats.aat = (((double)MEMORY_READ_TIME * stats.reads)
+                + ((double)DISK_PAGE_READ_TIME * stats.page_faults) 
+                + ((double)DISK_PAGE_WRITE_TIME * stats.writebacks)) 
+                / (double)stats.accesses;
 }
