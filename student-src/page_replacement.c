@@ -41,7 +41,30 @@ pfn_t free_frame(void) {
      */
 
     /* If the victim is in use, we must evict it first */
+    if (frame_table[victim_pfn].mapped) {
+        pcb_t *victim_proc = frame_table[victim_pfn].process;
+        vpn_t victim_vpn = frame_table[victim_pfn].vpn;
 
+        // Locate victim pte
+        pte_t *victim_pt = (pte_t *)(mem + (victim_proc->saved_ptbr * PAGE_SIZE));
+        pte_t *victim_pte = &victim_pt[victim_vpn];
+
+        // Write back to disk if dirty
+        if (victim_pte->dirty) {
+            swap_write(victim_pte, mem + (victim_pfn * PAGE_SIZE));
+            stats.writebacks++;
+            victim_pte->dirty = 0;
+        }
+
+        // original pte now invalid
+        victim_pte->valid = 0;
+
+        // Clear mapping from frame table
+        frame_table[victim_pfn].mapped = 0;
+        frame_table[victim_pfn].referenced = 0;
+        frame_table[victim_pfn].process = NULL;
+        frame_table[victim_pfn].vpn = 0;
+    }
 
     /* Return the pfn */
     return victim_pfn;
