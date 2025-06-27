@@ -22,11 +22,11 @@ Modern day operating systems often solve this problem by dividing physical memor
 
 There are 7 tasks in the files that you will complete. The files that you will be changing are the following:
 
-- `page_splitting.h`: Break down a virtual address into its components.  
-- `paging.c`: Initialize any necessary bookkeeping and implement address translation.  
-- `page_fault.c`: Implement the page fault handler.  
-- `page_replacement.c`: Write frame eviction.  
-- `stats.c`: Calculate the Average Access Time of the memory system (AAT)
+- `./student-src/page_splitting.h`: Break down a virtual address into its components.  
+- `./student-src/paging.c`: Initialize any necessary bookkeeping and implement address translation.  
+- `./student-src/page_fault.c`: Implement the page fault handler.  
+- `./student-src/page_replacement.c`: Write frame eviction.  
+- `./student-src/stats.c`: Calculate the Average Access Time of the memory system (AAT)
 
 You will fill out the functions in these files, and then validate your output against the given outputs.
 
